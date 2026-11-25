@@ -21,10 +21,16 @@ variable "region" {
   default = "us-east-2" # the AWS account is region-locked to Ohio
 }
 
-variable "github_repo" {
-  description = "owner/name of the repository whose workflows may deploy."
+variable "github_repo_subject" {
+  description = <<-EOT
+    Subject prefix GitHub puts in this repository's OIDC tokens. New repositories
+    use GitHub's immutable format owner@<owner id>/repo@<repo id>: the numeric IDs
+    mean a deleted-and-recreated repo (or a renamed owner) with the same name
+    cannot assume the role. Read it with:
+    gh api repos/OWNER/REPO/actions/oidc/customization/sub --jq .sub_claim_prefix
+  EOT
   type        = string
-  default     = "janahcodes/MinuteTaker-IaC"
+  default     = "repo:janahcodes@260461252/MinuteTaker-IaC@1472254095"
 }
 
 data "aws_caller_identity" "me" {}
@@ -82,8 +88,8 @@ data "aws_iam_policy_document" "ci_trust" {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
       values = [
-        "repo:${var.github_repo}:ref:refs/heads/main",
-        "repo:${var.github_repo}:environment:production",
+        "${var.github_repo_subject}:ref:refs/heads/main",
+        "${var.github_repo_subject}:environment:production",
       ]
     }
   }
