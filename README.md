@@ -13,14 +13,11 @@ Project 2's MinuteTaker, rebuilt entirely from version-controlled code and deplo
 | Reaching the app | `http://localhost:8080` | **HTTPS** via an ALB, an ACM certificate and a Route 53 record |
 | Build / deploy | by hand | **GitHub Actions** on every commit: test → build → apply → deploy → smoke test |
 
-## What runs where
-```
-GitHub push ──► Actions: test + validate ──► terraform apply ──► build & push images (ECR, tag = commit)
-                                                         └──► kubectl apply (EKS) ──► rollout, auto-rollback ──► smoke test
+## Architecture
 
-Browser ──HTTPS──► Route 53 ──► ALB (ACM cert) ──► NodePort 30080 on 2 EKS nodes
-                                                     └► web (nginx) ─► api (FastAPI) ─► S3 / DynamoDB / SQS ─► worker (Whisper)
-```
+![MinuteTaker architecture: GitHub Actions pipeline deploying to EKS on AWS](docs/architecture.svg)
+
+A push to `main` runs the pipeline across the top. It reaches AWS through OIDC, so no keys are stored. Users reach the app over HTTPS through Route 53 and the load balancer, and the pods on two EKS nodes in separate availability zones use DynamoDB, S3 and SQS through their own IAM roles.
 
 ## Repository layout
 ```

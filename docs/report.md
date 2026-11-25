@@ -24,25 +24,13 @@ Project 2 ran MinuteTaker's three services on a local `kind` cluster, which shel
 
 ## 3. Architecture
 
-```
-                 ┌──────────────────────────── GitHub ─────────────────────────────┐
-  git push ────► │ test ─ validate ─► gate ─► terraform apply ─► build+push (ECR) ─► │
-                 │                     deploy (kubectl, auto-rollback) ─► smoke test│
-                 └──────────────┬─────────────────────────────────────────────────┘
-                                │ OIDC token → sts:AssumeRoleWithWebIdentity (no stored keys)
-  ┌─────────────────────────── AWS us-east-2 ────────────────────────────────────────┐
-  │ Route 53  minutetaker.cloudscape.lol ─► ALB :443 (ACM cert, TLS 1.3/1.2) :80→301 │
-  │                                          │ NodePort 30080                        │
-  │  VPC 10.40.0.0/16, 2 AZs   ┌─────────────┴─────────── EKS 1.35 ───────────────┐  │
-  │                            │ node (AZ a)                 node (AZ b)          │  │
-  │                            │  web ×2 (nginx) ─► api ×2 (FastAPI) ─► worker ×1–5│  │
-  │                            │  HPAs · PDBs · probes · metrics-server           │  │
-  │                            └───────┬──────────────────────────┬───────────────┘  │
-  │       Pod Identity: api role ──────┤          worker role ────┤                  │
-  │                   DynamoDB (meetings) · S3 (audio) · SQS jobs + DLQ · ECR        │
-  └──────────────────────────────────────────────────────────────────────────────────┘
-  Bootstrap (created once, survives teardown): S3 Terraform state bucket, GitHub OIDC provider, CI role
-```
+![MinuteTaker architecture](architecture.svg)
+
+**How a request flows:** the browser looks up `minutetaker.cloudscape.lol` in Route 53 and connects over HTTPS to the ALB. The ALB holds the ACM certificate and redirects plain HTTP. It forwards to NodePort 30080 on both EKS nodes, where the `web` pods (nginx) serve the UI and proxy `/api/` to the `api` pods. An upload is stored in S3, recorded in DynamoDB and queued on SQS. A `worker` pod takes the job, transcribes it with Whisper, and writes the transcript and action items back to DynamoDB. A job that keeps failing ends up in the dead-letter queue.
+
+**How a change ships:** a push to `main` runs the pipeline across the top of the diagram. It assumes the CI role through GitHub OIDC, applies the Terraform, pushes images tagged with the commit to ECR, applies the Kubernetes manifests and smoke-tests the live URL.
+
+**What survives a teardown:** only the dashed bootstrap stack (Terraform state, OIDC provider, CI role). Everything else in the orange AWS box is created by `infra/live` and deleted by `terraform destroy`.
 
 ## 4. Design decisions
 
