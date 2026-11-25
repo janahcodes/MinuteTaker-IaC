@@ -59,12 +59,13 @@ gh workflow run pipeline             # builds the environment
 make kubeconfig                      # kubectl access for the admin user
 ```
 
-## Local development (no AWS needed)
+## Optional: developer checks on a laptop
+The deployment is the AWS environment above. These commands are only for checking changes **before** pushing. They run the same tests and checks the pipeline runs, so a mistake is caught locally instead of in a failed pipeline run.
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r services/api/requirements-dev.txt -r services/worker/requirements-dev.txt
-make test        # 45 unit tests, AWS mocked with moto
-make lint        # the pipeline's static checks
-make up          # kind cluster + emulated AWS → http://localhost:8080
+make test        # the 45 unit tests the pipeline runs (AWS calls are mocked so tests cost nothing)
+make lint        # the pipeline's static checks (Terraform, Kubernetes manifests, scripts)
 ```
+`make up` still starts Project 2's local kind cluster for offline UI work. It isn't part of the Project 3 deployment.
 
 **Report:** [docs/report.md](docs/report.md)
