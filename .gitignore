@@ -3,11 +3,12 @@ __pycache__/
 *.pyc
 .pytest_cache/
 samples/
-infra/.terraform/
-infra/*.tfstate
-infra/*.tfstate.*
-infra/terraform.tfvars
 .DS_Store
-infra/tfplan
-k8s/overlays/aws/aws-config.yaml
-k8s/overlays/aws/creds.env
+# Terraform: providers, state (bootstrap state is local; live state is in S3), plans
+**/.terraform/
+*.tfstate
+*.tfstate.*
+**/tfplan
+*.tfvars
+# generated from terraform output by scripts/render-config.sh
+k8s/overlays/eks/config.env
