@@ -25,6 +25,11 @@ spec:
         - name: web
           image: minutetaker-web
           ports: [{ name: http, containerPort: 8080 }]
+          # On shutdown, keep serving for 10 s so the Service endpoints (and the
+          # load balancer behind them) stop sending new requests here first.
+          # Without it, replacing pods caused occasional 502s (report §2.4).
+          lifecycle:
+            preStop: { sleep: { seconds: 10 } }
           env:
             - { name: API_UPSTREAM, value: "http://api.minutetaker.svc.cluster.local:8000" }
             - { name: MAX_UPLOAD_MB, value: "200" }
