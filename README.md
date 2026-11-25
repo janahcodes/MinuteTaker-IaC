@@ -11,7 +11,7 @@ Project 2's MinuteTaker, rebuilt entirely from version-controlled code and deplo
 | Data services | DynamoDB, S3, SQS (Terraform) | same, now part of one environment that is torn down and rebuilt |
 | AWS credentials for pods | long-lived IAM user access key | **EKS Pod Identity**: a separate short-lived role per service, no keys |
 | Reaching the app | `http://localhost:8080` | **[https://minutetaker.cloudscape.lol](https://minutetaker.cloudscape.lol)**, served over HTTPS via an ALB, an ACM certificate and a Route 53 record |
-| Build / deploy | by hand | **GitHub Actions** on every commit: test → build → apply → deploy → smoke test |
+| Build / deploy | by hand | **GitHub Actions** on every commit: test → end-to-end test → apply → build → deploy → smoke test |
 
 ## Architecture
 
@@ -35,8 +35,8 @@ docs/report.md     design, decisions, measured teardown/rebuild, what didn't wor
 ## The pipeline
 | Trigger | What happens |
 |---|---|
-| Any push or pull request | unit tests (api, worker) · `terraform fmt` + `validate` · manifests checked against the Kubernetes 1.35 schemas (kubeconform) · shellcheck · on branches other than main, the 3 images are built |
-| Push to `main` | all of the above, then `terraform apply` → images pushed to ECR tagged with the commit SHA → `kubectl apply` → wait for rollout (**automatic rollback** if a service doesn't become ready) → **end-to-end smoke test** against the live HTTPS URL |
+| Any push or pull request | unit tests (api, worker) · `terraform fmt`, `validate` and `terraform test` · manifests checked against the Kubernetes 1.35 schemas (kubeconform) · shellcheck · **end-to-end test**: the 3 images are built and run together, and a real recording is transcribed |
+| Push to `main` | all of the above, then `terraform apply` → images pushed to ECR tagged with the commit SHA → `kubectl apply` → wait for rollout (**automatic rollback** if a service doesn't become ready) → check every pod runs this commit → **end-to-end smoke test** against the live HTTPS URL |
 | **Run workflow** on *pipeline* | same as a push to main; **rebuilds the environment from nothing** if it was torn down |
 | **Run workflow** on *teardown* (type `destroy`) | `terraform destroy`, then `verify-teardown.sh` asks AWS directly that nothing is left |
 
