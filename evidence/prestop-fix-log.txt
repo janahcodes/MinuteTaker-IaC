@@ -1,0 +1,54 @@
+test (api) | 13 passed in 3.68s
+validate infra + manifests | Success! The configuration is valid.
+validate infra + manifests | Success! The configuration is valid.
+validate infra + manifests | Success! 6 passed, 0 failed.
+test (worker) | 32 passed in 2.18s
+end-to-end test (built containers) | == web is healthy (and, on https, the TLS certificate is valid)
+end-to-end test (built containers) | == api can reach the queue (proves pod-identity credentials work)
+end-to-end test (built containers) | == upload a recording
+end-to-end test (built containers) | == worker transcribes it (timeout 300s)
+end-to-end test (built containers) |   22:39:40 PROCESSING
+end-to-end test (built containers) |   22:39:45 DONE
+end-to-end test (built containers) | == transcript and action items are correct
+end-to-end test (built containers) |   - Sarah: Send the revised proposal to the client (due by Friday)
+end-to-end test (built containers) |   - Speaker: Update the budget sheet before the review (due -)
+end-to-end test (built containers) |   - ?: Finalize the hiring plan (due before next Monday)
+end-to-end test (built containers) |   - Mike: Set up the staging environment (due tomorrow)
+end-to-end test (built containers) |   - ?: Make sure the contract is signed (due by end of week)
+end-to-end test (built containers) |   transcribed by da80c84c6314 in 0.8 s
+end-to-end test (built containers) | == search finds it
+end-to-end test (built containers) | == clean up
+end-to-end test (built containers) | SMOKE TEST PASSED: http://localhost:8080
+terraform apply | No changes. Your infrastructure matches the configuration.
+terraform apply | Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
+deploy to EKS | Waiting for deployment "api" rollout to finish: 1 out of 2 new replicas have been updated...
+deploy to EKS | Waiting for deployment "api" rollout to finish: 1 out of 2 new replicas have been updated...
+deploy to EKS | Waiting for deployment "api" rollout to finish: 1 out of 2 new replicas have been updated...
+deploy to EKS | Waiting for deployment "api" rollout to finish: 1 old replicas are pending termination...
+deploy to EKS | Waiting for deployment "api" rollout to finish: 1 old replicas are pending termination...
+deploy to EKS | Waiting for deployment "api" rollout to finish: 1 old replicas are pending termination...
+deploy to EKS | deployment "api" successfully rolled out
+deploy to EKS | deployment "web" successfully rolled out
+deploy to EKS | deployment "worker" successfully rolled out
+deploy to EKS | api-664d8549f5-q7rzl=439093223948.dkr.ecr.us-east-2.amazonaws.com/minutetaker-prod-api:64ae2c8035036d8d0da8de592bffe0699e57e4da
+deploy to EKS | api-664d8549f5-xxmpw=439093223948.dkr.ecr.us-east-2.amazonaws.com/minutetaker-prod-api:64ae2c8035036d8d0da8de592bffe0699e57e4da
+deploy to EKS | web-64474944f6-dj9lh=439093223948.dkr.ecr.us-east-2.amazonaws.com/minutetaker-prod-web:64ae2c8035036d8d0da8de592bffe0699e57e4da
+deploy to EKS | web-64474944f6-xz79r=439093223948.dkr.ecr.us-east-2.amazonaws.com/minutetaker-prod-web:64ae2c8035036d8d0da8de592bffe0699e57e4da
+deploy to EKS | worker-79985c8bb5-68v5n=439093223948.dkr.ecr.us-east-2.amazonaws.com/minutetaker-prod-worker:64ae2c8035036d8d0da8de592bffe0699e57e4da
+end-to-end smoke test | == HTTP redirects to HTTPS
+end-to-end smoke test | == web is healthy (and, on https, the TLS certificate is valid)
+end-to-end smoke test | == api can reach the queue (proves pod-identity credentials work)
+end-to-end smoke test | == upload a recording
+end-to-end smoke test | == worker transcribes it (timeout 300s)
+end-to-end smoke test |   22:42:05 PROCESSING
+end-to-end smoke test |   22:42:10 DONE
+end-to-end smoke test | == transcript and action items are correct
+end-to-end smoke test |   - Sarah: Send the revised proposal to the client (due by Friday)
+end-to-end smoke test |   - Speaker: Update the budget sheet before the review (due -)
+end-to-end smoke test |   - ?: Finalize the hiring plan (due before next Monday)
+end-to-end smoke test |   - Mike: Set up the staging environment (due tomorrow)
+end-to-end smoke test |   - ?: Make sure the contract is signed (due by end of week)
+end-to-end smoke test |   transcribed by worker-79985c8bb5-68v5n in 0.97 s
+end-to-end smoke test | == search finds it
+end-to-end smoke test | == clean up
+end-to-end smoke test | SMOKE TEST PASSED: https://minutetaker.cloudscape.lol

@@ -1,0 +1,15 @@
+test (api) | 13 passed in 4.54s
+test (worker) | 32 passed in 2.54s
+validate infra + manifests | Success! The configuration is valid.
+validate infra + manifests | Success! The configuration is valid.
+terraform apply | Apply complete! Resources: 59 added, 0 changed, 0 destroyed.
+deploy to EKS | Waiting for deployment "api" rollout to finish: 0 of 2 updated replicas are available...
+deploy to EKS | Waiting for deployment "api" rollout to finish: 1 of 2 updated replicas are available...
+deploy to EKS | deployment "api" successfully rolled out
+deploy to EKS | deployment "web" successfully rolled out
+deploy to EKS | Waiting for deployment "worker" rollout to finish: 0 of 1 updated replicas are available...
+deploy to EKS | deployment "worker" successfully rolled out
+end-to-end smoke test | == HTTP redirects to HTTPS
+end-to-end smoke test | == web is healthy, TLS certificate is valid
+end-to-end smoke test | SMOKE TEST FAILED: UI page did not load
+end-to-end smoke test | ##[error]Process completed with exit code 1.

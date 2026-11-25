@@ -1,0 +1,17 @@
+run:      https://github.com/janahcodes/MinuteTaker-IaC/actions/runs/45686863130
+title:    pipeline
+trigger:  workflow_dispatch   commit: ba210c3   result: failure
+time:     2026-11-25T19:36:26Z -> 2026-11-25T19:51:38Z  (15.2 min)
+
+job                                       result     seconds
+test (api)                                success    21
+test (worker)                             success    24
+validate infra + manifests                success    35
+gate                                      success    5
+build (${{ matrix.service }})             skipped    -
+terraform apply                           success    717
+push image (api)                          success    56
+push image (worker)                       success    84
+push image (web)                          success    20
+deploy to EKS                             success    46
+end-to-end smoke test                     failure    6

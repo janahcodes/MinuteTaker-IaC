@@ -1,0 +1,35 @@
+validate infra + manifests | Success! The configuration is valid.
+validate infra + manifests | Success! The configuration is valid.
+validate infra + manifests | Success! 6 passed, 0 failed.
+test (api) | 13 passed in 3.69s
+test (worker) | 32 passed in 2.27s
+end-to-end test (built containers) | == web is healthy (and, on https, the TLS certificate is valid)
+end-to-end test (built containers) | == api can reach the queue (proves pod-identity credentials work)
+end-to-end test (built containers) | == upload a recording
+end-to-end test (built containers) | == worker transcribes it (timeout 300s)
+end-to-end test (built containers) |   22:23:09 PROCESSING
+end-to-end test (built containers) |   22:23:14 DONE
+end-to-end test (built containers) | == transcript and action items are correct
+end-to-end test (built containers) |   - Sarah: Send the revised proposal to the client (due by Friday)
+end-to-end test (built containers) |   - Speaker: Update the budget sheet before the review (due -)
+end-to-end test (built containers) |   - ?: Finalize the hiring plan (due before next Monday)
+end-to-end test (built containers) |   - Mike: Set up the staging environment (due tomorrow)
+end-to-end test (built containers) |   - ?: Make sure the contract is signed (due by end of week)
+end-to-end test (built containers) |   transcribed by 79967e61c64c in 0.71 s
+end-to-end test (built containers) | == search finds it
+end-to-end test (built containers) | == clean up
+end-to-end test (built containers) | SMOKE TEST PASSED: http://localhost:8080
+terraform apply | No changes. Your infrastructure matches the configuration.
+terraform apply | Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
+deploy to EKS | Waiting for deployment "api" rollout to finish: 1 out of 2 new replicas have been updated...
+deploy to EKS | error: timed out waiting for the condition
+deploy to EKS | ##[error]api did not become ready; rolling back every service to the previous version
+deploy to EKS | ##[error]Process completed with exit code 1.
+deploy to EKS |     echo "::error::$d did not become ready; rolling back every service to the previous version"
+deploy to EKS | error: timed out waiting for the condition
+deploy to EKS | ##[error]api did not become ready; rolling back every service to the previous version
+deploy to EKS |   Topology Spread Constraints:  kubernetes.io/hostname:ScheduleAnyway when max skew 1 is exceeded for selector app=api
+deploy to EKS | deployment.apps/api rolled back
+deploy to EKS | deployment.apps/web rolled back
+deploy to EKS | deployment.apps/worker rolled back
+deploy to EKS | ##[error]Process completed with exit code 1.

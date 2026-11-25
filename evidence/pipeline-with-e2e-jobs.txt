@@ -1,0 +1,17 @@
+run:      https://github.com/janahcodes/MinuteTaker-IaC/actions/runs/45701437273
+title:    Pipeline: end-to-end test of built containers before deploy; verify p…
+trigger:  push   commit: c407545   result: success
+time:     2026-11-25T21:07:41Z -> 2026-11-25T21:11:55Z  (4.2 min)
+
+job                                       result     seconds
+validate infra + manifests                success    33
+test (worker)                             success    24
+test (api)                                success    29
+end-to-end test (built containers)        success    85
+gate                                      success    11
+terraform apply                           success    30
+push image (worker)                       success    30
+push image (api)                          success    31
+push image (web)                          success    24
+deploy to EKS                             success    37
+end-to-end smoke test                     success    11

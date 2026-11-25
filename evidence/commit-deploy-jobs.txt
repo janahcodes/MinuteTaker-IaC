@@ -1,0 +1,17 @@
+run:      https://github.com/janahcodes/MinuteTaker-IaC/actions/runs/45689497228
+title:    Fix smoke test false failures found on the first live deploy
+trigger:  push   commit: 077a4bf   result: success
+time:     2026-11-25T19:52:46Z -> 2026-11-25T19:56:41Z  (3.9 min)
+
+job                                       result     seconds
+test (api)                                success    20
+test (worker)                             success    29
+validate infra + manifests                success    36
+gate                                      success    17
+build (${{ matrix.service }})             skipped    -
+terraform apply                           success    35
+push image (web)                          success    34
+push image (worker)                       success    21
+push image (api)                          success    27
+deploy to EKS                             success    83
+end-to-end smoke test                     success    12

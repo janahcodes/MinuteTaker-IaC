@@ -1,0 +1,17 @@
+run:      https://github.com/janahcodes/MinuteTaker-IaC/actions/runs/45712543325
+title:    Experiment 2 (deliberate bug): api readiness probe on a path that doe…
+trigger:  push   commit: b44433f   result: failure
+time:     2026-11-25T22:21:36Z -> 2026-11-25T22:32:25Z  (10.8 min)
+
+job                                       result     seconds
+validate infra + manifests                success    33
+test (api)                                success    17
+test (worker)                             success    23
+end-to-end test (built containers)        success    74
+gate                                      success    13
+terraform apply                           success    32
+push image (worker)                       success    21
+push image (api)                          success    15
+push image (web)                          success    33
+deploy to EKS                             failure    449
+end-to-end smoke test                     skipped    -

@@ -1,0 +1,7 @@
+run:      https://github.com/janahcodes/MinuteTaker-IaC/actions/runs/45691187891
+title:    teardown
+trigger:  workflow_dispatch   commit: 077a4bf   result: success
+time:     2026-11-25T20:03:13Z -> 2026-11-25T20:15:17Z  (12 min)
+
+job                                       result     seconds
+destroy                                   success    719

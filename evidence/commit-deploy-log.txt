@@ -1,0 +1,31 @@
+test (api) | 13 passed in 3.86s
+test (worker) | 32 passed in 3.91s
+validate infra + manifests | Success! The configuration is valid.
+validate infra + manifests | Success! The configuration is valid.
+terraform apply | No changes. Your infrastructure matches the configuration.
+terraform apply | Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
+deploy to EKS | Waiting for deployment "api" rollout to finish: 1 out of 2 new replicas have been updated...
+deploy to EKS | Waiting for deployment "api" rollout to finish: 1 out of 2 new replicas have been updated...
+deploy to EKS | Waiting for deployment "api" rollout to finish: 1 out of 2 new replicas have been updated...
+deploy to EKS | Waiting for deployment "api" rollout to finish: 1 old replicas are pending termination...
+deploy to EKS | Waiting for deployment "api" rollout to finish: 1 old replicas are pending termination...
+deploy to EKS | deployment "api" successfully rolled out
+deploy to EKS | deployment "web" successfully rolled out
+deploy to EKS | deployment "worker" successfully rolled out
+end-to-end smoke test | == HTTP redirects to HTTPS
+end-to-end smoke test | == web is healthy, TLS certificate is valid
+end-to-end smoke test | == api can reach the queue (proves pod-identity credentials work)
+end-to-end smoke test | == upload a recording
+end-to-end smoke test | == worker transcribes it (timeout 300s)
+end-to-end smoke test |   19:56:32 PROCESSING
+end-to-end smoke test |   19:56:37 DONE
+end-to-end smoke test | == transcript and action items are correct
+end-to-end smoke test |   - Sarah: Send the revised proposal to the client (due by Friday)
+end-to-end smoke test |   - Speaker: Update the budget sheet before the review (due -)
+end-to-end smoke test |   - ?: Finalize the hiring plan (due before next Monday)
+end-to-end smoke test |   - Mike: Set up the staging environment (due tomorrow)
+end-to-end smoke test |   - ?: Make sure the contract is signed (due by end of week)
+end-to-end smoke test |   transcribed by worker-7d5bfd64b5-s4tpp in 0.96 s
+end-to-end smoke test | == search finds it
+end-to-end smoke test | == clean up
+end-to-end smoke test | SMOKE TEST PASSED: https://minutetaker.cloudscape.lol

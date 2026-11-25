@@ -1,0 +1,15 @@
+destroy | Destroy complete! Resources: 59 destroyed.
+destroy | gone  EKS cluster
+destroy | gone  EC2 nodes
+destroy | gone  load balancer
+destroy | gone  target group
+destroy | gone  VPC
+destroy | gone  DynamoDB table
+destroy | gone  S3 bucket
+destroy | gone  SQS queues
+destroy | gone  ECR repositories
+destroy | gone  IAM roles
+destroy | gone  log group
+destroy | gone  EBS volumes
+destroy | gone  DNS record
+destroy | Teardown verified: no environment resources remain.

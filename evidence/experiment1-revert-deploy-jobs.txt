@@ -1,0 +1,17 @@
+run:      https://github.com/janahcodes/MinuteTaker-IaC/actions/runs/45702356370
+title:    Revert experiment 1 (deliberate bug: lowercase owners)
+trigger:  push   commit: 1e51108   result: success
+time:     2026-11-25T21:13:36Z -> 2026-11-25T21:18:01Z  (4.4 min)
+
+job                                       result     seconds
+test (api)                                success    17
+test (worker)                             success    19
+validate infra + manifests                success    28
+end-to-end test (built containers)        success    90
+gate                                      success    17
+terraform apply                           success    30
+push image (web)                          success    27
+push image (api)                          success    19
+push image (worker)                       success    19
+deploy to EKS                             success    44
+end-to-end smoke test                     success    11

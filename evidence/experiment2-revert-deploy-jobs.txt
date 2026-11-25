@@ -1,0 +1,17 @@
+run:      https://github.com/janahcodes/MinuteTaker-IaC/actions/runs/45714205669
+title:    Revert experiment 2 (deliberate bug: wrong readiness probe path)
+trigger:  push   commit: cdc707e   result: success
+time:     2026-11-25T22:33:11Z -> 2026-11-25T22:37:09Z  (3.9 min)
+
+job                                       result     seconds
+validate infra + manifests                success    39
+test (worker)                             success    29
+test (api)                                success    17
+end-to-end test (built containers)        success    86
+gate                                      success    5
+terraform apply                           success    29
+push image (worker)                       success    20
+push image (web)                          success    14
+push image (api)                          success    20
+deploy to EKS                             success    31
+end-to-end smoke test                     success    12
