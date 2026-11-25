@@ -5,6 +5,7 @@
 #   (Whisper) -> DynamoDB -> api
 # Exits non-zero (failing the pipeline) if any step is wrong.
 # Usage: scripts/smoke-test.sh https://minutetaker.cloudscape.lol [audio.wav]
+#        scripts/smoke-test.sh http://localhost:8080   (docker compose; the pipeline runs this before deploying)
 set -euo pipefail
 URL="${1:?usage: smoke-test.sh <base-url> [audio-file]}"
 FILE="${2:-$(dirname "$0")/../tests/fixtures/standup.wav}"
@@ -13,11 +14,13 @@ TIMEOUT_S="${SMOKE_TIMEOUT_S:-300}"
 step() { printf '\n== %s\n' "$*"; }
 fail() { echo "SMOKE TEST FAILED: $*" >&2; exit 1; }
 
-step "HTTP redirects to HTTPS"
-code=$(curl -s -o /dev/null -w '%{http_code}' "${URL/https:/http:}/")
-[ "$code" = 301 ] || fail "expected 301 from http://, got $code"
+if [[ "$URL" == https://* ]]; then
+  step "HTTP redirects to HTTPS"
+  code=$(curl -s -o /dev/null -w '%{http_code}' "${URL/https:/http:}/")
+  [ "$code" = 301 ] || fail "expected 301 from http://, got $code"
+fi
 
-step "web is healthy, TLS certificate is valid"
+step "web is healthy (and, on https, the TLS certificate is valid)"
 curl -sf --retry 30 --retry-delay 5 --retry-all-errors "$URL/healthz" >/dev/null || fail "$URL/healthz"
 # Capture first: piping into `grep -q` makes curl die of SIGPIPE when grep
 # exits early, and pipefail then reports a false failure.
