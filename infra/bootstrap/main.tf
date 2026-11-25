@@ -30,7 +30,7 @@ variable "github_repo_subject" {
     gh api repos/OWNER/REPO/actions/oidc/customization/sub --jq .sub_claim_prefix
   EOT
   type        = string
-  default     = "repo:janahcodes@260461252/MinuteTaker-IaC@1472254095"
+  default     = "repo:janahcodes@260461252/MinuteTaker-IaC@1472439793"
 }
 
 data "aws_caller_identity" "me" {}
