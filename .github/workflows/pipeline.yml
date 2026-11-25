@@ -1,0 +1,240 @@
+# CI/CD for MinuteTaker.
+#
+# Every push / pull request:   test -> validate infra & manifests -> build images
+# Every push to main:          ... -> terraform apply -> push images to ECR
+#                              -> deploy to EKS (auto-rollback) -> end-to-end smoke test
+# Run manually ("Run workflow"): same as a push to main, and also REBUILDS the
+#                              whole environment from nothing if it was torn down.
+#
+# AWS access uses GitHub's OIDC token -> the minutetaker-github-ci role
+# (infra/bootstrap). No AWS keys are stored in GitHub.
+name: pipeline
+
+on:
+  push:
+    branches: ["**"]
+    paths-ignore: ["docs/**", "**.md"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: us-east-2
+  AWS_ROLE: arn:aws:iam::439093223948:role/minutetaker-github-ci
+  TF_VERSION: 1.17.2
+  CLUSTER: minutetaker-prod
+
+jobs:
+  # ------------------------------------------------------------------ CI
+  test:
+    name: test (${{ matrix.service }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api, worker]
+    defaults:
+      run:
+        working-directory: services/${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12" # same as the Dockerfiles
+          cache: pip
+          cache-dependency-path: services/${{ matrix.service }}/requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      - run: pytest -q
+
+  validate:
+    name: validate infra + manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      - name: terraform fmt
+        run: terraform fmt -check -recursive infra
+      - name: terraform validate
+        run: |
+          for stack in bootstrap live; do
+            terraform -chdir=infra/$stack init -backend=false -input=false
+            terraform -chdir=infra/$stack validate
+          done
+      - name: Kubernetes manifests render and match the API schemas
+        run: |
+          curl -sSL https://github.com/yannh/kubeconform/releases/download/v0.8.0/kubeconform-linux-amd64.tar.gz | tar xz kubeconform
+          printf 'AWS_REGION=x\nTABLE_NAME=x\nBUCKET_NAME=x\nQUEUE_URL=x\n' > k8s/overlays/eks/config.env
+          for overlay in eks local; do
+            echo "-- $overlay"
+            kubectl kustomize k8s/overlays/$overlay | ./kubeconform -strict -summary -kubernetes-version 1.35.0
+          done
+      - name: shellcheck
+        run: shellcheck scripts/*.sh
+
+  build:
+    name: build (${{ matrix.service }})
+    # Pull requests and other branches: prove the images build, push nothing.
+    if: github.ref != 'refs/heads/main'
+    needs: [test, validate]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api, worker, web]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v7
+        with:
+          context: services/${{ matrix.service }}
+          push: false
+          cache-from: type=gha,scope=${{ matrix.service }}
+
+  # ------------------------------------------------------------------ CD
+  # On a normal push, deploy only if the environment is up. After a teardown,
+  # pushes keep running CI without silently recreating (and paying for) a
+  # whole EKS cluster; "Run workflow" is the explicit rebuild button.
+  gate:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [test, validate]
+    runs-on: ubuntu-latest
+    permissions: { id-token: write, contents: read }
+    outputs:
+      deploy: ${{ steps.check.outputs.deploy }}
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ env.AWS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+      - id: check
+        run: |
+          if [ "${{ github.event_name }}" = workflow_dispatch ]; then
+            echo "Manual run: build (or rebuild) the environment."; echo deploy=true >> "$GITHUB_OUTPUT"
+          elif aws eks describe-cluster --name "$CLUSTER" >/dev/null 2>&1; then
+            echo "Environment is up: deploying this commit."; echo deploy=true >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Environment is torn down, so CI ran but nothing was deployed. Run the 'pipeline' workflow manually to rebuild it."
+            echo deploy=false >> "$GITHUB_OUTPUT"
+          fi
+
+  infra:
+    name: terraform apply
+    needs: gate
+    if: needs.gate.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: { group: production, cancel-in-progress: false } # never two applies at once
+    permissions: { id-token: write, contents: read }
+    outputs:
+      registry: ${{ steps.out.outputs.registry }}
+      app_url: ${{ steps.out.outputs.app_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ env.AWS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-duration-seconds: 7200
+      - run: terraform -chdir=infra/live init -input=false
+      - name: terraform plan
+        run: terraform -chdir=infra/live plan -input=false -out=tfplan
+      - name: terraform apply
+        run: |
+          start=$SECONDS
+          terraform -chdir=infra/live apply -input=false tfplan
+          echo "terraform apply: $((SECONDS - start)) s" >> "$GITHUB_STEP_SUMMARY"
+      - id: out
+        run: |
+          echo "registry=$(terraform -chdir=infra/live output -raw registry)" >> "$GITHUB_OUTPUT"
+          echo "app_url=$(terraform -chdir=infra/live output -raw app_url)"   >> "$GITHUB_OUTPUT"
+
+  images:
+    name: push image (${{ matrix.service }})
+    needs: infra # the ECR repositories are part of the environment
+    runs-on: ubuntu-latest
+    permissions: { id-token: write, contents: read }
+    strategy:
+      matrix:
+        service: [api, worker, web]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ env.AWS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: aws-actions/amazon-ecr-login@v2
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v7
+        with:
+          context: services/${{ matrix.service }}
+          push: true
+          # Tag = git commit. ECR tags are immutable, so a tag always means one image.
+          tags: ${{ needs.infra.outputs.registry }}/${{ env.CLUSTER }}-${{ matrix.service }}:${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+          provenance: false
+
+  deploy:
+    name: deploy to EKS
+    needs: [infra, images]
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ needs.infra.outputs.app_url }}
+    concurrency: { group: production, cancel-in-progress: false }
+    permissions: { id-token: write, contents: read }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ env.AWS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+      - run: aws eks update-kubeconfig --name "$CLUSTER"
+      - name: Render config from terraform outputs
+        run: terraform -chdir=infra/live init -input=false >/dev/null && scripts/render-config.sh
+      - name: Pin images to this commit
+        env:
+          REG: ${{ needs.infra.outputs.registry }}
+        run: |
+          cat >> k8s/overlays/eks/kustomization.yaml <<EOF
+          images:
+            - { name: minutetaker-api,    newName: $REG/$CLUSTER-api,    newTag: "$GITHUB_SHA" }
+            - { name: minutetaker-worker, newName: $REG/$CLUSTER-worker, newTag: "$GITHUB_SHA" }
+            - { name: minutetaker-web,    newName: $REG/$CLUSTER-web,    newTag: "$GITHUB_SHA" }
+          EOF
+          kubectl kustomize k8s/overlays/eks | grep 'image:'
+      - name: kubectl apply
+        run: kubectl apply -k k8s/overlays/eks
+      - name: Wait for rollout (roll back on failure)
+        run: |
+          start=$SECONDS
+          for d in api web worker; do
+            if ! kubectl -n minutetaker rollout status deploy/$d --timeout=420s; then
+              echo "::error::$d did not become ready; rolling back every service to the previous version"
+              kubectl -n minutetaker get pods -o wide
+              kubectl -n minutetaker describe deploy/$d | tail -20
+              for r in api web worker; do kubectl -n minutetaker rollout undo deploy/$r || true; done
+              exit 1
+            fi
+          done
+          echo "rollout: $((SECONDS - start)) s" >> "$GITHUB_STEP_SUMMARY"
+          kubectl -n minutetaker get deploy,hpa,pods -o wide
+
+  smoke:
+    name: end-to-end smoke test
+    needs: [infra, deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: scripts/smoke-test.sh "${{ needs.infra.outputs.app_url }}"
+      - run: echo "Live at ${{ needs.infra.outputs.app_url }}" >> "$GITHUB_STEP_SUMMARY"

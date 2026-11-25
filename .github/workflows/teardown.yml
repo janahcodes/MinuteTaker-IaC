@@ -1,0 +1,50 @@
+# Destroys the entire environment (EKS, nodes, load balancer, VPC, DynamoDB,
+# S3, SQS, ECR, IAM roles, DNS record, certificate) and then checks that
+# nothing billable is left. Rebuild afterwards by running the "pipeline"
+# workflow manually.
+#
+# Only infra/bootstrap (the Terraform state bucket and the CI role) survives:
+# it is what this workflow uses to run the destroy.
+name: teardown
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "destroy" to delete the whole environment'
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: us-east-2
+  AWS_ROLE: arn:aws:iam::439093223948:role/minutetaker-github-ci
+  TF_VERSION: 1.17.2
+
+jobs:
+  destroy:
+    if: inputs.confirm == 'destroy'
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: { group: production, cancel-in-progress: false }
+    permissions: { id-token: write, contents: read }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ env.AWS_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-duration-seconds: 7200
+      - run: terraform -chdir=infra/live init -input=false
+      - name: terraform destroy
+        run: |
+          start=$SECONDS
+          terraform -chdir=infra/live destroy -auto-approve -input=false
+          echo "terraform destroy: $((SECONDS - start)) s" >> "$GITHUB_STEP_SUMMARY"
+      - name: Verify nothing is left
+        run: scripts/verify-teardown.sh | tee -a "$GITHUB_STEP_SUMMARY"
