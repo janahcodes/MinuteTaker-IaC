@@ -17,6 +17,13 @@ on:
 permissions:
   contents: read
 
+# An explicit `shell: bash` makes GitHub run every step with `-eo pipefail`.
+# The default (`bash -e`) ignores failures on the left of a pipe, so
+# `check | tee` would pass even when the check fails.
+defaults:
+  run:
+    shell: bash
+
 env:
   AWS_REGION: us-east-2
   AWS_ROLE: arn:aws:iam::439093223948:role/minutetaker-github-ci
