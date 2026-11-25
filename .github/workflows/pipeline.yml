@@ -20,6 +20,13 @@ on:
 permissions:
   contents: read
 
+# An explicit `shell: bash` makes GitHub run every step with `-eo pipefail`.
+# The default (`bash -e`) ignores failures on the left of a pipe, so
+# `check | tee` would pass even when the check fails.
+defaults:
+  run:
+    shell: bash
+
 env:
   AWS_REGION: us-east-2
   AWS_ROLE: arn:aws:iam::439093223948:role/minutetaker-github-ci
@@ -63,6 +70,8 @@ jobs:
             terraform -chdir=infra/$stack init -backend=false -input=false
             terraform -chdir=infra/$stack validate
           done
+      - name: terraform test (mock AWS provider, no credentials)
+        run: terraform -chdir=infra/live test
       - name: Kubernetes manifests render and match the API schemas
         run: |
           curl -sSL https://github.com/yannh/kubeconform/releases/download/v0.8.0/kubeconform-linux-amd64.tar.gz | tar xz kubeconform
@@ -74,23 +83,25 @@ jobs:
       - name: shellcheck
         run: shellcheck scripts/*.sh
 
-  build:
-    name: build (${{ matrix.service }})
-    # Pull requests and other branches: prove the images build, push nothing.
-    if: github.ref != 'refs/heads/main'
+  e2e:
+    name: end-to-end test (built containers)
+    # Builds the three images and runs them together, with DynamoDB/S3/SQS
+    # emulated by moto (docker-compose.yml), then runs the same smoke test the
+    # live site gets: a real recording is uploaded, transcribed by Whisper and
+    # searched. Catches bugs between services before anything is deployed.
     needs: [test, validate]
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service: [api, worker, web]
     steps:
       - uses: actions/checkout@v7
-      - uses: docker/setup-buildx-action@v4
-      - uses: docker/build-push-action@v7
-        with:
-          context: services/${{ matrix.service }}
-          push: false
-          cache-from: type=gha,scope=${{ matrix.service }}
+      - name: Build and start the stack
+        run: docker compose up -d --build
+      - name: Smoke test against the containers
+        run: scripts/smoke-test.sh http://localhost:8080
+      - name: Container logs (on failure)
+        if: failure()
+        run: docker compose ps -a && docker compose logs --tail=80
+      - if: always()
+        run: docker compose down -v
 
   # ------------------------------------------------------------------ CD
   # On a normal push, deploy only if the environment is up. After a teardown,
@@ -98,7 +109,7 @@ jobs:
   # whole EKS cluster; "Run workflow" is the explicit rebuild button.
   gate:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: [test, validate]
+    needs: [test, validate, e2e]
     runs-on: ubuntu-latest
     permissions: { id-token: write, contents: read }
     outputs:
@@ -229,6 +240,17 @@ jobs:
           done
           echo "rollout: $((SECONDS - start)) s" >> "$GITHUB_STEP_SUMMARY"
           kubectl -n minutetaker get deploy,hpa,pods -o wide
+      - name: Every pod serving traffic runs this commit
+        run: |
+          # Old pods that are still shutting down (worker finishes its job first) don't count.
+          images=$(kubectl -n minutetaker get pods -l 'app in (api,web,worker)' -o json | jq -r '.items[]
+                     | select(.status.phase == "Running" and .metadata.deletionTimestamp == null)
+                     | "\(.metadata.name)=\(.spec.containers[0].image)"')
+          echo "$images"
+          if echo "$images" | grep -v ":$GITHUB_SHA\$" | grep -q .; then
+            echo "::error::some running pods are not on commit $GITHUB_SHA"; exit 1
+          fi
+          echo "all $(echo "$images" | wc -l) pods run ${GITHUB_SHA:0:7}" >> "$GITHUB_STEP_SUMMARY"
 
   smoke:
     name: end-to-end smoke test

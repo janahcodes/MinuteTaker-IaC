@@ -7,6 +7,7 @@ test:      ## run both test suites
 
 lint:      ## the same static checks the pipeline runs
 	terraform fmt -check -recursive infra
+	terraform -chdir=infra/live init -backend=false -input=false >/dev/null && terraform -chdir=infra/live test
 	shellcheck scripts/*.sh
 	actionlint
 	for o in eks local; do kubectl kustomize k8s/overlays/$$o | kubeconform -strict -summary -kubernetes-version 1.35.0; done
