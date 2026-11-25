@@ -95,7 +95,7 @@ def extract_action_items(segments: list[dict], limit: int = 25, ref: date | None
         due = _DUE.search(sentence)
         owner = None
         if named:
-            owner = named.group(1)
+            owner = named.group(1).lower()
         elif re.match(r"^(?:\w+[.,]\s*)?(i['’]ll|i will|i['’]m going to|i can take)\b", sentence, re.IGNORECASE):
             owner = "Speaker"
 
