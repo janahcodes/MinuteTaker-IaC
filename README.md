@@ -3,14 +3,14 @@
 
 Project 2's MinuteTaker, rebuilt entirely from version-controlled code and deployed by a pipeline on every commit. It's a meeting recorder that returns a timestamped transcript plus the action items, with owners and due dates.
 
-**Live (while the environment is up):** https://minutetaker.cloudscape.lol
+**Live (while the environment is up):** **[https://minutetaker.cloudscape.lol](https://minutetaker.cloudscape.lol)**
 
 | | Project 2 | Project 3 |
 |---|---|---|
 | Kubernetes | local `kind` cluster, created by shell scripts | **Amazon EKS**, created by Terraform |
 | Data services | DynamoDB, S3, SQS (Terraform) | same, now part of one environment that is torn down and rebuilt |
 | AWS credentials for pods | long-lived IAM user access key | **EKS Pod Identity**: a separate short-lived role per service, no keys |
-| Reaching the app | `http://localhost:8080` | **HTTPS** via an ALB, an ACM certificate and a Route 53 record |
+| Reaching the app | `http://localhost:8080` | **[https://minutetaker.cloudscape.lol](https://minutetaker.cloudscape.lol)**, served over HTTPS via an ALB, an ACM certificate and a Route 53 record |
 | Build / deploy | by hand | **GitHub Actions** on every commit: test → build → apply → deploy → smoke test |
 
 ## Architecture
