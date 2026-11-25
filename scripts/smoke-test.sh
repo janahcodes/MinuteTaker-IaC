@@ -19,10 +19,13 @@ code=$(curl -s -o /dev/null -w '%{http_code}' "${URL/https:/http:}/")
 
 step "web is healthy, TLS certificate is valid"
 curl -sf --retry 30 --retry-delay 5 --retry-all-errors "$URL/healthz" >/dev/null || fail "$URL/healthz"
-curl -sf "$URL/" | grep -q "MinuteTaker" || fail "UI page did not load"
+# Capture first: piping into `grep -q` makes curl die of SIGPIPE when grep
+# exits early, and pipefail then reports a false failure.
+page=$(curl -sf "$URL/") || fail "UI page did not load"
+grep -q "<title>MinuteTaker</title>" <<<"$page" || fail "UI page is not MinuteTaker"
 
 step "api can reach the queue (proves pod-identity credentials work)"
-curl -sf --retry 20 --retry-delay 5 --retry-all-errors "$URL/api/stats" | tee /dev/stderr | jq -e '.queue != null' >/dev/null \
+curl -sf --retry 20 --retry-delay 5 --retry-all-errors "$URL/api/stats" | jq -e '.queue != null' >/dev/null \
   || fail "/api/stats"
 
 step "upload a recording"
@@ -44,10 +47,12 @@ while :; do
 done
 
 step "transcript and action items are correct"
-jq -e '.transcript | test("standup"; "i")' <<<"$m" >/dev/null || fail "transcript missing expected words"
+jq -e '.transcript | test("stand-?up"; "i")' <<<"$m" >/dev/null || fail "transcript missing expected words"
 n=$(jq '.action_items | length' <<<"$m")
-jq -r '.action_items[] | "  - \(.owner // "?"): \(.text) (due \(.due // "-"))"' <<<"$m"
+jq -r '.action_items[] | "  - \(.owner // "?"): \(.task) (due \(.due // "-"))"' <<<"$m"
 [ "$n" -ge 2 ] || fail "expected at least 2 action items, got $n"
+jq -e '[.action_items[].owner] | index("Sarah") != null' <<<"$m" >/dev/null || fail "owner 'Sarah' not extracted"
+echo "  transcribed by $(jq -r .processed_by <<<"$m") in $(jq -r .processing_s <<<"$m") s"
 
 step "search finds it"
 curl -sf "$URL/api/search?q=proposal" | jq -e --arg id "$id" '[.results[].id] | index($id) != null' >/dev/null \
