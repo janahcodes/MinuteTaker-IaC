@@ -46,7 +46,7 @@ spec:
             failureThreshold: 3
           # Readiness: can it reach DynamoDB? If not, stop sending it traffic.
           readinessProbe:
-            httpGet: { path: /readyz, port: http }
+            httpGet: { path: /ready, port: http }
             periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 2
