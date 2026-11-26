@@ -1,22 +1,17 @@
-test (api) | 13 passed in 3.56s
-validate infra + manifests | Success! The configuration is valid.
-validate infra + manifests | Success! The configuration is valid.
-validate infra + manifests | Success! 6 passed, 0 failed.
 test (worker) | FAILED tests/test_worker.py::test_action_items_owner_and_due - AssertionError: assert 'sarah' == 'Sarah'
 test (worker) | FAILED tests/test_worker.py::test_named_owner_with_will - AssertionError: assert ('mike' == 'Mike'
 test (worker) | ##[error]Process completed with exit code 1.
-test (worker) |         assert len(items) == 2
-test (worker) | >       assert first["owner"] == "Sarah"
+test (api) | 13 passed in 4.21s
+validate infra + manifests | Success! The configuration is valid.
+validate infra + manifests | Success! The configuration is valid.
+validate infra + manifests | Success! 6 passed, 0 failed.
 test (worker) | E       AssertionError: assert 'sarah' == 'Sarah'
-test (worker) |         assert len(items) == 1
-test (worker) | >       assert items[0]["owner"] == "Mike" and items[0]["due"].lower() == "tomorrow"
-test (worker) | E       AssertionError: assert ('mike' == 'Mike'
 test (worker) | FAILED tests/test_worker.py::test_action_items_owner_and_due - AssertionError: assert 'sarah' == 'Sarah'
 test (worker) | FAILED tests/test_worker.py::test_named_owner_with_will - AssertionError: assert ('mike' == 'Mike'
-push to red: 35s
+push to red: 41s
 live pods still on:
-api-9b9857564-6q49q c407545
-api-9b9857564-bkcqp c407545
-web-bc6d57597-488jn c407545
-web-bc6d57597-sztfq c407545
-worker-55dd6958f-gv686 c407545
+api-cfc9c59b-9s4zt 3a6c2b4
+api-cfc9c59b-dk76n 3a6c2b4
+web-77859d889c-5jjbr 3a6c2b4
+web-77859d889c-fs7bg 3a6c2b4
+worker-6fc86c5df9-fbz8f 3a6c2b4

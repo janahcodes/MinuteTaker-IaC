@@ -1,21 +1,21 @@
+test (worker) | 32 passed in 2.57s
+test (api) | 13 passed in 4.02s
 validate infra + manifests | Success! The configuration is valid.
 validate infra + manifests | Success! The configuration is valid.
 validate infra + manifests | Success! 6 passed, 0 failed.
-test (worker) | 32 passed in 2.12s
-test (api) | 13 passed in 3.63s
 end-to-end test (built containers) | == web is healthy (and, on https, the TLS certificate is valid)
 end-to-end test (built containers) | == api can reach the queue (proves pod-identity credentials work)
 end-to-end test (built containers) | == upload a recording
 end-to-end test (built containers) | == worker transcribes it (timeout 300s)
-end-to-end test (built containers) |   22:35:03 PROCESSING
-end-to-end test (built containers) |   22:35:08 DONE
+end-to-end test (built containers) |   23:44:19 PROCESSING
+end-to-end test (built containers) |   23:44:24 DONE
 end-to-end test (built containers) | == transcript and action items are correct
 end-to-end test (built containers) |   - Sarah: Send the revised proposal to the client (due by Friday)
 end-to-end test (built containers) |   - Speaker: Update the budget sheet before the review (due -)
 end-to-end test (built containers) |   - ?: Finalize the hiring plan (due before next Monday)
 end-to-end test (built containers) |   - Mike: Set up the staging environment (due tomorrow)
 end-to-end test (built containers) |   - ?: Make sure the contract is signed (due by end of week)
-end-to-end test (built containers) |   transcribed by 8ada3475d5da in 1.23 s
+end-to-end test (built containers) |   transcribed by 651bd4a0cadb in 0.94 s
 end-to-end test (built containers) | == search finds it
 end-to-end test (built containers) | == clean up
 end-to-end test (built containers) | SMOKE TEST PASSED: http://localhost:8080
@@ -26,29 +26,28 @@ deploy to EKS | Waiting for deployment "api" rollout to finish: 1 out of 2 new r
 deploy to EKS | Waiting for deployment "api" rollout to finish: 1 out of 2 new replicas have been updated...
 deploy to EKS | Waiting for deployment "api" rollout to finish: 1 old replicas are pending termination...
 deploy to EKS | Waiting for deployment "api" rollout to finish: 1 old replicas are pending termination...
-deploy to EKS | Waiting for deployment "api" rollout to finish: 1 old replicas are pending termination...
 deploy to EKS | deployment "api" successfully rolled out
 deploy to EKS | deployment "web" successfully rolled out
 deploy to EKS | deployment "worker" successfully rolled out
-deploy to EKS | api-c88899579-lqkc5=439093223948.dkr.ecr.us-east-2.amazonaws.com/minutetaker-prod-api:cdc707ee1498fa6f378dbf0cef968de6e3c29d24
-deploy to EKS | api-c88899579-vk7zf=439093223948.dkr.ecr.us-east-2.amazonaws.com/minutetaker-prod-api:cdc707ee1498fa6f378dbf0cef968de6e3c29d24
-deploy to EKS | web-548567bb48-9mmtp=439093223948.dkr.ecr.us-east-2.amazonaws.com/minutetaker-prod-web:cdc707ee1498fa6f378dbf0cef968de6e3c29d24
-deploy to EKS | web-548567bb48-gxjfs=439093223948.dkr.ecr.us-east-2.amazonaws.com/minutetaker-prod-web:cdc707ee1498fa6f378dbf0cef968de6e3c29d24
-deploy to EKS | worker-9bf968456-pzqzg=439093223948.dkr.ecr.us-east-2.amazonaws.com/minutetaker-prod-worker:cdc707ee1498fa6f378dbf0cef968de6e3c29d24
+deploy to EKS | api-5ffc446c7b-qjhl6=439093223948.dkr.ecr.us-east-2.amazonaws.com/minutetaker-prod-api:7b8a406bf1ae89642ce380d0cea7b3a74aec5145
+deploy to EKS | api-5ffc446c7b-rrtrt=439093223948.dkr.ecr.us-east-2.amazonaws.com/minutetaker-prod-api:7b8a406bf1ae89642ce380d0cea7b3a74aec5145
+deploy to EKS | web-d6b8967df-b7v5g=439093223948.dkr.ecr.us-east-2.amazonaws.com/minutetaker-prod-web:7b8a406bf1ae89642ce380d0cea7b3a74aec5145
+deploy to EKS | web-d6b8967df-s7vvk=439093223948.dkr.ecr.us-east-2.amazonaws.com/minutetaker-prod-web:7b8a406bf1ae89642ce380d0cea7b3a74aec5145
+deploy to EKS | worker-5869bf8f95-vthfl=439093223948.dkr.ecr.us-east-2.amazonaws.com/minutetaker-prod-worker:7b8a406bf1ae89642ce380d0cea7b3a74aec5145
 end-to-end smoke test | == HTTP redirects to HTTPS
 end-to-end smoke test | == web is healthy (and, on https, the TLS certificate is valid)
 end-to-end smoke test | == api can reach the queue (proves pod-identity credentials work)
 end-to-end smoke test | == upload a recording
 end-to-end smoke test | == worker transcribes it (timeout 300s)
-end-to-end smoke test |   22:37:00 PROCESSING
-end-to-end smoke test |   22:37:05 DONE
+end-to-end smoke test |   23:46:24 PROCESSING
+end-to-end smoke test |   23:46:29 DONE
 end-to-end smoke test | == transcript and action items are correct
 end-to-end smoke test |   - Sarah: Send the revised proposal to the client (due by Friday)
 end-to-end smoke test |   - Speaker: Update the budget sheet before the review (due -)
 end-to-end smoke test |   - ?: Finalize the hiring plan (due before next Monday)
 end-to-end smoke test |   - Mike: Set up the staging environment (due tomorrow)
 end-to-end smoke test |   - ?: Make sure the contract is signed (due by end of week)
-end-to-end smoke test |   transcribed by worker-9bf968456-pzqzg in 1.19 s
+end-to-end smoke test |   transcribed by worker-c6cdfbd69-k4krn in 1.2 s
 end-to-end smoke test | == search finds it
 end-to-end smoke test | == clean up
 end-to-end smoke test | SMOKE TEST PASSED: https://minutetaker.cloudscape.lol

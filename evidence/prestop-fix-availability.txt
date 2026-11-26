@@ -1,2 +1,0 @@
-endpoint=https://minutetaker.cloudscape.lol/api/meetings duration=200s
-requests=499 ok=499 failed=0 success=100.00% slowest=244ms

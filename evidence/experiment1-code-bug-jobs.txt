@@ -1,12 +1,12 @@
-run:      https://github.com/janahcodes/MinuteTaker-IaC/actions/runs/45702170407
+run:      https://github.com/janahcodes/MinuteTaker-IaC/actions/runs/45721139460
 title:    Experiment 1 (deliberate bug): lowercase action-item owners
-trigger:  push   commit: 48a07c9   result: failure
-time:     2026-11-25T21:12:26Z -> 2026-11-25T21:13:01Z  (0.5 min)
+trigger:  push   commit: 748b7a0   result: failure
+time:     2026-11-25T23:24:38Z -> 2026-11-25T23:25:19Z  (0.6 min)
 
 job                                       result     seconds
-test (api)                                success    23
-validate infra + manifests                success    32
-test (worker)                             failure    29
+test (worker)                             failure    24
+test (api)                                success    21
+validate infra + manifests                success    36
 end-to-end test (built containers)        skipped    -
 gate                                      skipped    -
 terraform apply                           skipped    -

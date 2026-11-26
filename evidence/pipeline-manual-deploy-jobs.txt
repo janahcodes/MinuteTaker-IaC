@@ -1,0 +1,17 @@
+run:      https://github.com/janahcodes/MinuteTaker-IaC/actions/runs/45720451948
+title:    pipeline
+trigger:  workflow_dispatch   commit: 3a6c2b4   result: success
+time:     2026-11-25T23:19:24Z -> 2026-11-25T23:24:09Z  (4.7 min)
+
+job                                       result     seconds
+test (worker)                             success    23
+test (api)                                success    23
+validate infra + manifests                success    39
+end-to-end test (built containers)        success    83
+gate                                      success    6
+terraform apply                           success    29
+push image (web)                          success    25
+push image (api)                          success    33
+push image (worker)                       success    62
+deploy to EKS                             success    37
+end-to-end smoke test                     success    13

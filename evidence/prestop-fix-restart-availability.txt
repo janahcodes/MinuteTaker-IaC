@@ -1,0 +1,4 @@
+# Measured 25 Nov 2026 22:42-22:46 UTC after the preStop fix: web and api
+# Deployments restarted twice (8 pods replaced) during the measurement.
+endpoint=https://minutetaker.cloudscape.lol/api/meetings duration=200s
+requests=499 ok=499 failed=0 success=100.00% slowest=244ms

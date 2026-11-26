@@ -1,17 +1,17 @@
-run:      https://github.com/janahcodes/MinuteTaker-IaC/actions/runs/45693338788
+run:      https://github.com/janahcodes/MinuteTaker-IaC/actions/runs/45725469147
 title:    pipeline
-trigger:  workflow_dispatch   commit: 077a4bf   result: success
-time:     2026-11-25T20:16:17Z -> 2026-11-25T20:30:26Z  (14.1 min)
+trigger:  workflow_dispatch   commit: 7b8a406   result: success
+time:     2026-11-25T23:59:45Z -> 2026-11-26T00:15:26Z  (15.6 min)
 
 job                                       result     seconds
-validate infra + manifests                success    30
-test (worker)                             success    25
-test (api)                                success    23
-gate                                      success    5
-build (${{ matrix.service }})             skipped    -
-terraform apply                           success    712
-push image (api)                          success    34
-push image (web)                          success    31
-push image (worker)                       success    30
-deploy to EKS                             success    39
-end-to-end smoke test                     success    13
+validate infra + manifests                success    36
+test (worker)                             success    23
+test (api)                                success    20
+end-to-end test (built containers)        success    89
+gate                                      success    6
+terraform apply                           success    711
+push image (web)                          success    21
+push image (api)                          success    16
+push image (worker)                       success    25
+deploy to EKS                             success    46
+end-to-end smoke test                     success    11

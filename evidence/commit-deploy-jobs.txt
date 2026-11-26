@@ -1,17 +1,17 @@
-run:      https://github.com/janahcodes/MinuteTaker-IaC/actions/runs/45689497228
-title:    Fix smoke test false failures found on the first live deploy
-trigger:  push   commit: 077a4bf   result: success
-time:     2026-11-25T19:52:46Z -> 2026-11-25T19:56:41Z  (3.9 min)
+run:      https://github.com/janahcodes/MinuteTaker-IaC/actions/runs/45721287189
+title:    Revert experiment 1 (deliberate bug: lowercase owners)
+trigger:  push   commit: 6ef9c60   result: success
+time:     2026-11-25T23:25:48Z -> 2026-11-25T23:30:10Z  (4.3 min)
 
 job                                       result     seconds
-test (api)                                success    20
-test (worker)                             success    29
-validate infra + manifests                success    36
-gate                                      success    17
-build (${{ matrix.service }})             skipped    -
-terraform apply                           success    35
-push image (web)                          success    34
+test (worker)                             success    22
+test (api)                                success    17
+validate infra + manifests                success    33
+end-to-end test (built containers)        success    92
+gate                                      success    7
+terraform apply                           success    28
+push image (web)                          success    23
+push image (api)                          success    19
 push image (worker)                       success    21
-push image (api)                          success    27
-deploy to EKS                             success    83
-end-to-end smoke test                     success    12
+deploy to EKS                             success    44
+end-to-end smoke test                     success    17

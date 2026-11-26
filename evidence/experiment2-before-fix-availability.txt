@@ -1,0 +1,5 @@
+# Measured 25 Nov 2026 22:21-22:36 UTC during the FIRST run of experiment 2,
+# before the preStop fix, in the earlier copy of this repository (since recreated).
+endpoint=https://minutetaker.cloudscape.lol/api/meetings duration=900s
+requests=2260 ok=2258 failed=2 success=99.91% slowest=3322ms
+first failure 22:25:23 (502), last failure 22:32:27 (502)
