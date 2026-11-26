@@ -1,0 +1,17 @@
+# Permission checks run inside the live EKS pods, 2026-11-26 01:30:40 UTC
+
+== worker: identity, an allowed call, and a call outside its policy
+identity: minutetaker-prod-worker
+sqs:ReceiveMessage (allowed): OK
+dynamodb:PutItem (not in policy): AccessDeniedException
+s3:PutObject (not in policy): AccessDenied
+
+== api: identity and a call outside its policy
+identity: minutetaker-prod-api
+sqs:ReceiveMessage (not in policy): AccessDenied
+
+== web: AWS credentials in its environment
+credential variables: 0
+
+== node's own role from inside a pod (instance metadata, hop limit 1)
+metadata service: blocked -> TimeoutError

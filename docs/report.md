@@ -3,7 +3,7 @@
 
 **Repository:** https://github.com/janahcodes/MinuteTaker-IaC
 **Live URL:** https://minutetaker.cloudscape.lol
-**Provider:** AWS, us-east-2. Times are UTC, 25 November 2026.
+**Provider:** AWS, us-east-2.
 
 ## Summary
 
@@ -176,8 +176,8 @@ These can also be started from the repository's Actions tab. A full cycle takes 
 ## 6. Results
 
 - **Transcription:** a 26-second recording was transcribed in about 1 second, with 5 action items found.
-- **Autoscaling:** 20 uploads at once scaled the worker from 1 to 3 pods, then back down.
-- **Permissions:** the worker tried an action it isn't allowed, and AWS refused it.
+- **Autoscaling:** I uploaded 20 recordings at once, and all 20 were transcribed within about 20 seconds. Worker CPU reached 145%, so the autoscaler scaled the worker from 1 to 3 pods. After the 3-minute cooldown, it scaled back down to 1 (`evidence/autoscaling.txt`).
+- **Permissions:** inside the live pods, each service's allowed calls worked, and calls outside its policy were refused. The web service has no AWS credentials, and pods can't reach the node's role (`evidence/permissions.txt`).
 - **No drift:** on every deploy, Terraform reported "No changes".
 
 ---
