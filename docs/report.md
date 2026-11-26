@@ -1,7 +1,7 @@
 # MinuteTaker: Project 3 Report
 ### Infrastructure as Code and CI/CD
 
-**Repository:** https://github.com/janahcodes/MinuteTaker-IaC
+**Repository:** https://github.com/janahcodes/ai255-project3-minutetaker
 **Live URL:** https://minutetaker.cloudscape.lol
 **Provider:** AWS, us-east-2.
 
@@ -154,8 +154,8 @@ Running the pipeline right after the teardown rebuilt everything (`evidence/rebu
 ## 4. Demonstrating a full teardown and rebuild
 
 ```bash
-gh workflow run teardown --repo janahcodes/MinuteTaker-IaC -f confirm=destroy
-gh workflow run pipeline --repo janahcodes/MinuteTaker-IaC
+gh workflow run teardown --repo janahcodes/ai255-project3-minutetaker -f confirm=destroy
+gh workflow run pipeline --repo janahcodes/ai255-project3-minutetaker
 ```
 
 These can also be started from the repository's Actions tab. A full cycle takes about 28 minutes.

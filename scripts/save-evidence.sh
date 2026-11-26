@@ -4,7 +4,7 @@
 # Usage: scripts/save-evidence.sh <run-id> <name>
 set -euo pipefail
 RUN="${1:?run id}"; NAME="${2:?name}"
-REPO="${REPO:-janahcodes/MinuteTaker-IaC}"
+REPO="${REPO:-janahcodes/ai255-project3-minutetaker}"
 cd "$(dirname "$0")/.."
 mkdir -p evidence
 
