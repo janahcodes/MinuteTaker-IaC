@@ -12,7 +12,7 @@ In Project 2, MinuteTaker ran on a local Kubernetes cluster that I created by ha
 - The whole environment is code: 59 AWS resources in Terraform, plus the Kubernetes manifests.
 - It runs on Amazon EKS.
 - A GitHub Actions pipeline tests, builds and deploys every commit, in about 4 minutes from push to live.
-- The environment was destroyed (12 min) and rebuilt from nothing (14 min) by the pipeline.
+- The environment was destroyed (12 min) and rebuilt from nothing (16 min) by the pipeline.
 
 ## Requirements and evidence
 
@@ -110,19 +110,22 @@ Every push builds the three images. On `main`, they are pushed to ECR, tagged wi
 ### 2.3 Deploys automatically on commit
 A push to `main` runs `terraform apply`, pushes the images, deploys to EKS and tests the live site, with no manual steps. If a service doesn't come up, the pipeline rolls everything back.
 
-One push went from commit to a tested live site in **3 min 55 s** (`evidence/commit-deploy-*`).
+One push went from commit to a tested live site in **4 min 22 s** (`evidence/commit-deploy-*`).
 
 If the environment has been torn down, pushes still run all the tests but skip the deploy, so a commit can't recreate the cluster by accident. Running the pipeline by hand rebuilds it.
 
 ### 2.4 Two deliberate bugs
 
-**Experiment 1: a code bug.** I changed the code so owner names were saved in lowercase. The unit tests failed **35 seconds** after the push (`assert 'sarah' == 'Sarah'`). Nothing was deployed, and the live site stayed on the old version.
+**Experiment 1: a code bug.** I changed the code so owner names were saved in lowercase. The unit tests failed **41 seconds** after the push (`assert 'sarah' == 'Sarah'`). Nothing was deployed, and the live site stayed on the old version.
 
 **Experiment 2: a deploy bug that passes every test.** I pointed the api's health check at a path that doesn't exist. All the tests passed, so it was deployed.
 - The new api pod never became ready, and the old pods kept serving.
 - After 7 minutes, the pipeline rolled back all services and marked the run as failed.
 
-During those 15 minutes, I sent about 5 requests a second to the site. **2,258 of 2,260 succeeded.** The 2 failures happened when web pods were being replaced. nginx was stopping before traffic moved away from it. I added a 10-second pause before a pod shuts down, and tested it again: **499 of 499 succeeded.**
+While this ran, I sent about 5 requests a second to the site for 15 minutes.
+- **First run: 2,258 of 2,260 succeeded.** The 2 failures happened when web pods were being replaced. nginx was stopping before traffic moved away from it.
+- **The fix:** a 10-second pause before a pod shuts down. Restarting all web and api pods twice then gave **499 of 499**.
+- **Second run, with the fix: 2,229 of 2,229 succeeded**, with no failures during the bad deploy or the rollback (`evidence/experiment2-*`).
 
 ---
 
@@ -131,19 +134,20 @@ During those 15 minutes, I sent about 5 requests a second to the site. **2,258 o
 ### 3.1 Destroy
 The `teardown` workflow runs `terraform destroy`. Then a script asks AWS directly whether 13 kinds of resources are gone.
 
-Result: **59 resources destroyed in 12 min 4 s**, and all 13 checks said `gone` (`evidence/teardown-1-*`). Only the bootstrap stack is left.
+Result: **59 resources destroyed in 12 min 8 s**, and all 13 checks said `gone` (`evidence/teardown-1-*`). Only the bootstrap stack is left.
 
 ### 3.2 Rebuild
 Running the pipeline right after the teardown rebuilt everything (`evidence/rebuild-1-*`):
 
 | Step | Time |
 |:--|:--|
-| Tests | 30 s |
-| `terraform apply`: 59 resources created | 11 min 52 s |
-| Build and push images | ~30 s |
-| Deploy | 39 s |
-| Live test passed | 13 s |
-| **Total** | **14 min 9 s** |
+| Tests and checks | 36 s |
+| End-to-end test of the built containers | 1 min 29 s |
+| `terraform apply`: 59 resources created | 11 min 51 s |
+| Build and push images | ~25 s |
+| Deploy | 46 s |
+| Live test passed | 11 s |
+| **Total** | **15 min 41 s** |
 
 ---
 
@@ -154,7 +158,7 @@ gh workflow run teardown --repo janahcodes/MinuteTaker-IaC -f confirm=destroy
 gh workflow run pipeline --repo janahcodes/MinuteTaker-IaC
 ```
 
-These can also be started from the repository's Actions tab. A full cycle takes about 26 minutes.
+These can also be started from the repository's Actions tab. A full cycle takes about 28 minutes.
 
 **The runs in §3 are the demonstration.** The teardown and the rebuild were both run through the pipeline, and their records are in `evidence/`.
 
